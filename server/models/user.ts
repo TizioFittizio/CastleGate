@@ -2,10 +2,19 @@ import mongoose = require('mongoose');
 import validator = require('validator');
 import jwt = require('jsonwebtoken');
 import bcrypt = require('bcrypt');
+import { Schema, Document, Model, HookNextFunction } from 'mongoose';
+import { IUserDocument } from '../interfaces/IUserDocument';
+import { IUser } from './user';
 
-const allowSameIpMultipleConnections = process.env.ALLOW_SAME_IP_MULTIPLE_CONNECTIONS || true;
+export interface IUser extends IUserDocument {
+    generateAuthToken(): string;
+}
 
-const UserSchema = new mongoose.Schema({
+export interface IUserModel extends Model<IUser> {
+    findByToken(token: string): Promise<IUser>;
+}
+
+export const schema: Schema = new Schema({
     email: {
         type: String,
         required: true,
@@ -14,7 +23,7 @@ const UserSchema = new mongoose.Schema({
         unique: true,
         validate: {
             validator: validator.isEmail,
-            message: "Invalid email address"
+            message: 'Invalid email address'
         }
     },
     password: {
@@ -23,34 +32,90 @@ const UserSchema = new mongoose.Schema({
         minlength: 6
     },
     tokens: [{
-        access: {
-            type: String,
-            required: true,
-        },
-        ip: {
-            type: String,
-            required: !allowSameIpMultipleConnections,
-            unique: !allowSameIpMultipleConnections
-        },
-        time: {
-            type: Number
-        },
         token: {
             type: String,
             required: true
         }
-    }]
-})
+    }],
+    creationDate: {
+        type: Date,
+        default: Date.now()
+    },
+    lastEditDate: {
+        type: Date,
+        default: null
+    },
+    lastAccessDate: {
+        type: Date,
+        default: Date.now()
+    },
+    enabled: {
+        type: Boolean,
+        default: true //TODO impostazioni
+    },
+    emailConfirmed: {
+        type: Boolean,
+        default: false
+    },
+    badPasswordCount: {
+        type: Number,
+        default: 0
+    }
+});
 
 /**
- * Override JSON response for this model
+ * Pre hook for editing, update the last edit time, and hash the password if changed
  */
-UserSchema.methods.toJSON = function(){
-    const user = this.toObject();
-    return {
-        ma: "buh"
+schema.pre('save', async function(next: HookNextFunction) {
+
+    const user = this as IUserDocument;
+
+    if (user.isModified('password')) {
+        const salt = bcrypt.genSaltSync(10);
+        const hash = bcrypt.hashSync(user.password, salt);
+        user.password = hash;
     }
-}
 
-export const User = mongoose.model('User', UserSchema);
+    user.lastEditDate = new Date();
+    next();
 
+});
+
+/**
+ * Return a token used for actions that requires authentication
+ */
+schema.methods.generateAuthToken = async function() {
+
+    const user = this as IUserDocument;
+// <-- opzioni per l'expire
+    const token = jwt.sign({id: user._id.toHexString()}, process.env.JWT_SECRET!, { expiresIn: '10s' }).toString(); 
+    user.tokens = user.tokens.concat([{token}]);
+    await user.save();
+
+    return Promise.resolve(token);
+
+};
+
+/**
+ * Return a user with the token provided
+ */
+schema.statics.findByToken = async function(token: string) {
+
+    const user = this as IUserDocument;
+    let decoded : any;
+
+    try {
+        decoded = jwt.verify(token, process.env.JWT_SECRET!);
+    }
+    catch (e) {
+        return Promise.reject(e);
+    }
+
+    return User.findOne({
+        '_id': decoded.id,
+        'tokens.token': token
+    });
+
+};
+
+export const User: IUserModel = mongoose.model<IUser, IUserModel>('User', schema);

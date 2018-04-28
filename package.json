@@ -13,11 +13,13 @@
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^2.0.1",
+    "body-parser": "^1.18.2",
     "express": "^4.16.3",
     "mongodb": "^3.0.7",
     "mongoose": "^5.0.16",
     "tslint-config-airbnb": "^5.8.0",
-    "validator": "^9.4.1"
+    "validator": "^9.4.1",
+    "jsonwebtoken": "^8.2.1"
   },
   "devDependencies": {
     "@types/bcrypt": "^1.0.0",
@@ -27,7 +29,6 @@
     "@types/mongoose": "^5.0.10",
     "@types/node": "^9.6.5",
     "@types/validator": "^9.4.1",
-    "jsonwebtoken": "^8.2.1",
     "nodemon": "^1.17.3",
     "ts-node": "^6.0.0",
     "tslint": "^5.9.1",

@@ -128,7 +128,7 @@
         "no-internal-module": false,
         "no-invalid-regexp": true,
         "no-invalid-template-strings": true,
-        "no-invalid-this": true,
+        "no-invalid-this": false,
         "no-jquery-raw-elements": true,
         "no-magic-numbers": false,
         "no-mergeable-namespace": false,
@@ -178,7 +178,7 @@
         "no-with-statement": true,
         "non-literal-require": true,
         "object-literal-key-quotes": [
-        true,
+        false,
         "as-needed"
         ],
         "object-literal-shorthand": false,
@@ -186,12 +186,11 @@
         "one-line": [
         true,
         "check-open-brace",
-        "check-catch",
         "check-else",
         "check-whitespace"
         ],
         "one-variable-per-declaration": true,
-        "only-arrow-functions": [true, "allow-declarations", "allow-named-functions"],
+        "only-arrow-functions": [false, "allow-declarations", "allow-named-functions"],
         "ordered-imports": [
         false
         ],
@@ -265,7 +264,7 @@
         "use-isnan": true,
         "use-named-parameter": true,
         "valid-typeof": false,
-        "variable-name": true,
+        "variable-name": false,
         "whitespace": [
         true,
         "check-branch",
@@ -288,7 +287,7 @@
         "no-redundant-jsdoc": true,
         "no-return-await": true,
         "no-submodule-imports": true,
-        "no-this-assignment": true,
+        "no-this-assignment": false,
         "no-unnecessary-class": true,
         "no-unnecessary-type-assertion": false,
         "number-literal-format": true,
