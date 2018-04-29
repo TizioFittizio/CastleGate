@@ -6,7 +6,7 @@ import bodyParser = require('body-parser');
 import path = require('path');
 import { UserRouter } from './routes/userRouter';
 
-const app = express();
+export const app = express();
 const port = process.env.PORT || 3000;
 
 const publicPath = path.join(__dirname, '../public');

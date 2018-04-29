@@ -5,6 +5,8 @@ import bcrypt = require('bcrypt');
 import { Schema, Document, Model, HookNextFunction } from 'mongoose';
 import { IUserDocument } from '../interfaces/IUserDocument';
 import { IUser } from './user';
+import { MongoError } from 'mongodb';
+import { ErrorResponse, ERROR_OCCURRED } from './../utils/errorResponse';
 
 export interface IUser extends IUserDocument {
     generateAuthToken(): string;
@@ -37,6 +39,10 @@ export const schema: Schema = new Schema({
             required: true
         }
     }],
+    rememberMe: {
+        type: Boolean,
+        default: false
+    },
     creationDate: {
         type: Date,
         default: Date.now()
@@ -51,7 +57,7 @@ export const schema: Schema = new Schema({
     },
     enabled: {
         type: Boolean,
-        default: true //TODO impostazioni
+        default: process.env.MANUAL_USER_ENABLING
     },
     emailConfirmed: {
         type: Boolean,
@@ -82,13 +88,31 @@ schema.pre('save', async function(next: HookNextFunction) {
 });
 
 /**
+ * Post hook for checking errors and return them in readable format
+ */
+schema.post('save', async function(error: MongoError, doc: mongoose.Document, next: HookNextFunction) {
+    // Duplicate email
+    if (error.code === 11000) {
+        return next(new Error(new ErrorResponse(ERROR_OCCURRED.ALREADY_PRESENT_EMAIL).get()));
+    }
+    next(error);
+});
+
+/**
  * Return a token used for actions that requires authentication
  */
 schema.methods.generateAuthToken = async function() {
 
     const user = this as IUserDocument;
-// <-- opzioni per l'expire
-    const token = jwt.sign({id: user._id.toHexString()}, process.env.JWT_SECRET!, { expiresIn: '10s' }).toString(); 
+    const expirationTime = process.env.TOKEN_EXPIRATION_TIME;
+
+    let token;
+    if (expirationTime) {
+        token = jwt.sign({id: user._id.toHexString()}, process.env.JWT_SECRET!, { expiresIn: `${expirationTime}s` }).toString();
+    }
+    else {
+        token = jwt.sign({id: user._id.toHexString()}, process.env.JWT_SECRET!);
+    }
     user.tokens = user.tokens.concat([{token}]);
     await user.save();
 

@@ -70,7 +70,7 @@ export class UserRouter extends BaseRouter {
      * @param e Error to return
      */
     private handleError(res: Response, e: Error) {
-        console.log(e.message);
+        console.log('[ERR]', e.message);
         res.status(400).send(e.message);
     }
 }
