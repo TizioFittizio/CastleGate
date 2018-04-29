@@ -2,14 +2,19 @@ import mongodb = require('mongodb');
 import jwt = require('jsonwebtoken');
 import { User } from '../../models/user';
 
-const ids = [new mongodb.ObjectID(), new mongodb.ObjectID()];
+const ids = [new mongodb.ObjectID(), new mongodb.ObjectID(), new mongodb.ObjectID()];
 
 export const users = [
     {
         _id: ids[0],
         email: 'test@test.test',
         password: '1234567654321',
-        tokens: []
+        tokens: [
+            {
+                token: jwt.sign({id: ids[0]}, process.env.JWT_SECRET!).toString()
+            }
+        ],
+        enabled: false
     },
     {
         _id: ids[1],
@@ -17,9 +22,10 @@ export const users = [
         password: '6k6Kp#v0hyaGoMMW',
         tokens: [
             {
-                token: jwt.sign({_id: ids[1], access: 'auth'}, process.env.JWT_SECRET!).toString()
+                token: jwt.sign({id: ids[1]}, process.env.JWT_SECRET!).toString()
             }
-        ]
+        ],
+        enabled: true
     }
 ];
 

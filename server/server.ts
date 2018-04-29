@@ -1,4 +1,4 @@
-require('./config/config.ts');
+require('./config/configSetup.ts');
 require('./db/mongoose.ts');
 
 import express = require('express');

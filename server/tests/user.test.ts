@@ -3,9 +3,10 @@ import * as request from 'supertest';
 import * as mocha from 'mocha';
 
 import { app } from '../server';
-import { populateUsers } from './seed/seed';
+import { populateUsers, users } from './seed/seed';
 import { User } from '../models/user';
 import { Response } from 'express';
+import { ERROR_OCCURRED } from '../utils/errorResponse';
 
 const route = '/auth';
 
@@ -23,10 +24,6 @@ describe('GET /dummy', () => {
 });
 
 describe('POST /signUp', () => {
-    //creazione corretta
-    //email gia usata
-    //errori validazione
-    //non ci si deve poter loggare se si è disabilitati all' inizio
     it('should register a new user', done => {
         const body = {
             email: 'uno@due.tre',
@@ -47,6 +44,7 @@ describe('POST /signUp', () => {
                     expect(user!.email).toBe(body.email);
                     expect(user!.password !== body.password).toBeTruthy();
                     expect(user!.emailConfirmed).toBeFalsy();
+                    expect(user!.enabled === !process.env.MANUAL_USER_ENABLING).toBeTruthy();
                     done();
                 }
                 catch (e) {
@@ -64,6 +62,63 @@ describe('POST /signUp', () => {
             .post(route + '/signUp')
             .send(body)
             .expect(400)
+            .expect((res: request.Response) => {
+                expect(res.header['content-type'].indexOf('application/json') >= 0).toBeTruthy();
+                expect(res.body.errorCode).toBe(ERROR_OCCURRED.ALREADY_PRESENT_EMAIL);
+            })
             .end(done);
     });
+
+    it('should return error for invalid data submitted', done => {
+        const body = {
+            email: 'asddsaasddsa',
+            password: 'u'
+        };
+        request(app)
+            .post(route + '/signUp')
+            .send(body)
+            .expect(400)
+            .expect((res: request.Response) => {
+                expect(res.body.errorCode).toBe(ERROR_OCCURRED.VALIDATION_ERROR);
+            })
+            .end(done);
+    });
+});
+
+describe('POST /access', () => {
+    it('should enter correctly', done => {
+
+        let lastAccess: Date;
+        User.findById(users[1]._id)
+        .then(user => {
+            lastAccess = user!.lastAccessDate;
+        });
+
+        request(app)
+            .post(route + '/access')
+            .set('x-auth', users[1].tokens[0].token)
+            .expect(200)
+            .end(async (err, res) => {
+                try {
+                    expect(err).toBeNull();
+                    const testUserEntered = await User.findById(users[1]._id);
+                    expect(testUserEntered!.lastAccessDate !== lastAccess).toBeTruthy();
+                    done();
+                }
+                catch (e) {
+                    done(e);
+                }
+            });
+    });
+
+    it('should not allow to enter without a token', done => {
+        request(app)
+            .post(route + '/access')
+            .expect(400)
+            .end(done);
+    });
+
+    // TOKEN EXPIRED
+    // USER INVALID
+
 });

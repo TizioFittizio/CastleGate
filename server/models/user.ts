@@ -57,7 +57,7 @@ export const schema: Schema = new Schema({
     },
     enabled: {
         type: Boolean,
-        default: process.env.MANUAL_USER_ENABLING
+        default: !process.env.MANUAL_USER_ENABLING
     },
     emailConfirmed: {
         type: Boolean,
@@ -82,19 +82,34 @@ schema.pre('save', async function(next: HookNextFunction) {
         user.password = hash;
     }
 
-    user.lastEditDate = new Date();
-    next();
+    if (!user.isModified('lastAccessDate')) {
+        user.lastEditDate = new Date();
+    }
 
+    next();
 });
 
 /**
  * Post hook for checking errors and return them in readable format
  */
 schema.post('save', async function(error: MongoError, doc: mongoose.Document, next: HookNextFunction) {
+
     // Duplicate email
     if (error.code === 11000) {
         return next(new Error(new ErrorResponse(ERROR_OCCURRED.ALREADY_PRESENT_EMAIL).get()));
     }
+
+    // Validation error
+    if (error.name === 'ValidationError') {
+        const errorReponse = new ErrorResponse(
+            ERROR_OCCURRED.VALIDATION_ERROR,
+            (error as any).errors   //TODO custom model for errors?
+        );
+        return next(new Error(errorReponse.get()));
+    }
+
+    console.warn('Error not handeled:', error.code, error.name);
+
     next(error);
 });
 
@@ -108,7 +123,7 @@ schema.methods.generateAuthToken = async function() {
 
     let token;
     if (expirationTime) {
-        token = jwt.sign({id: user._id.toHexString()}, process.env.JWT_SECRET!, { expiresIn: `${expirationTime}s` }).toString();
+        token = jwt.sign({id: user._id.toHexString()}, process.env.JWT_SECRET!, { expiresIn: `${expirationTime}` }).toString();
     }
     else {
         token = jwt.sign({id: user._id.toHexString()}, process.env.JWT_SECRET!);
@@ -117,13 +132,12 @@ schema.methods.generateAuthToken = async function() {
     await user.save();
 
     return Promise.resolve(token);
-
 };
 
 /**
  * Return a user with the token provided
  */
-schema.statics.findByToken = async function(token: string) {
+schema.statics.findByToken = async function(token: string): Promise<IUser | null> {
 
     const user = this as IUserDocument;
     let decoded : any;
@@ -139,7 +153,6 @@ schema.statics.findByToken = async function(token: string) {
         '_id': decoded.id,
         'tokens.token': token
     });
-
 };
 
 export const User: IUserModel = mongoose.model<IUser, IUserModel>('User', schema);

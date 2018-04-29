@@ -41,7 +41,6 @@ export abstract class BaseRouter {
 
         for (const route of this.routes) {
 
-            console.log(`Setting ${route.method} ${route.url} `);
             const middlewares = route.middlewares && route.middlewares.length ? route.middlewares : [];
 
             switch (route.method) {

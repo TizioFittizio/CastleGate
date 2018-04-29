@@ -1,6 +1,8 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { User } from '../models/user';
 import { BaseRouter, Route, Method } from './baseRouter';
+import { authenticate, AuthenticatedRequest } from '../middlewares/authenticate';
+import { ErrorResponse, ERROR_OCCURRED } from '../utils/errorResponse';
 
 export class UserRouter extends BaseRouter {
 
@@ -16,9 +18,10 @@ export class UserRouter extends BaseRouter {
             action: this.signUp.bind(this)
         },
         {
-            url: '/signIn',
+            url: '/access',
             method: Method.POST,
-            action: this.signIn.bind(this)
+            action: this.access.bind(this),
+            middlewares: [authenticate]
         }
     ];
 
@@ -53,11 +56,17 @@ export class UserRouter extends BaseRouter {
         }
     }
 
-    private async signIn(req: Request, res: Response) {
+    /**
+     * Given a token as x-auth header, try to return a valid user
+     * @param req Express request
+     * @param res Express response
+     */
+    private async access(req: Request, res: Response) {
         try {
-            const token = req.header('x-auth');
-            const user = await User.findByToken(token!);
-            res.status(user ? 204 : 401).send();
+            const authReq = (req as AuthenticatedRequest);
+            authReq.user.lastAccessDate = new Date();
+            await authReq.user.save();
+            res.status(200).send((req as AuthenticatedRequest).user._id);
         }
         catch (e) {
             return this.handleError(res, e);
@@ -66,11 +75,18 @@ export class UserRouter extends BaseRouter {
 
     /**
      * Error handler
+     * e.message is usually a JSON formatted by the user post save hook
+     * If the error is not a json string, it will be parsed as one
      * @param res Express response
      * @param e Error to return
      */
     private handleError(res: Response, e: Error) {
-        console.log('[ERR]', e.message);
-        res.status(400).send(e.message);
+        try {
+            JSON.parse(e.message);
+        }
+        catch (err) {
+            e.message = new ErrorResponse(ERROR_OCCURRED.GENERIC_ERROR, {message: e.message}).get();
+        }
+        res.status(400).contentType('application/json').send(e.message);
     }
 }

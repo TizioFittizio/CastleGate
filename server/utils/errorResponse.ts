@@ -1,22 +1,26 @@
 export enum ERROR_OCCURRED {
     GENERIC_ERROR,
-    ALREADY_PRESENT_EMAIL
+    ALREADY_PRESENT_EMAIL,
+    VALIDATION_ERROR,
+    TOKEN_REQUIRED,
+    NEW_TOKEN_REQUIRED,
+    DISABLED_USER
 }
 
 export class ErrorResponse {
 
     private error: ERROR_OCCURRED;
-    private message: string;
+    private data: object;
 
-    constructor(error: ERROR_OCCURRED, message?: string) {
+    constructor(error: ERROR_OCCURRED, data?: object) {
         this.error = error;
-        this.message = message || '';
+        this.data = data || {};
     }
 
     public get() {
         return JSON.stringify({
             errorCode: this.error,
-            message: this.message
+            data: this.data
         });
     }
 
