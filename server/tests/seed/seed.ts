@@ -26,6 +26,17 @@ export const users = [
             }
         ],
         enabled: true
+    },
+    {
+        _id: ids[2],
+        email: 'aaaaa@aaaaa.com',
+        password: '987876765654543432321!',
+        tokens: [
+            {
+                token: jwt.sign({id: ids[2]}, process.env.JWT_SECRET!, {expiresIn: '0s'}).toString()
+            }
+        ],
+        enabled: true
     }
 ];
 

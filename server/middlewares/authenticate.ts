@@ -28,12 +28,12 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     }
     catch (e) {
         if (e.message === NOT_ENABLED) {
-            return res.status(403).send(
+            return res.contentType('application/json').status(403).send(
                 new ErrorResponse(ERROR_OCCURRED.DISABLED_USER).get()
             );
         }
         if (e.message === NO_TOKEN) {
-            return res.status(400).send(
+            return res.contentType('application/json').status(400).send(
                 new ErrorResponse(ERROR_OCCURRED.TOKEN_REQUIRED).get()
             );
         }

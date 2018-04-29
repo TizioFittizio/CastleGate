@@ -115,10 +115,32 @@ describe('POST /access', () => {
         request(app)
             .post(route + '/access')
             .expect(400)
+            .expect((res: request.Response) => {
+                expect(res.body.errorCode).toBe(ERROR_OCCURRED.TOKEN_REQUIRED);
+            })
             .end(done);
     });
 
-    // TOKEN EXPIRED
-    // USER INVALID
+    it('should not allow to enter if user is disabled', done => {
+        request(app)
+            .post(route + '/access')
+            .set('x-auth', users[0].tokens[0].token)
+            .expect(403)
+            .expect((res: request.Response) => {
+                expect(res.body.errorCode).toBe(ERROR_OCCURRED.DISABLED_USER);
+            })
+            .end(done);
+    });
+
+    it('should not allow to enter if token has expired', done => {
+        request(app)
+            .post(route + '/access')
+            .set('x-auth', users[2].tokens[0].token)
+            .expect(401)
+            .expect((res: request.Response) => {
+                expect(res.body.errorCode).toBe(ERROR_OCCURRED.NEW_TOKEN_REQUIRED);
+            })
+            .end(done);
+    });
 
 });
