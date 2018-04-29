@@ -83,6 +83,7 @@ describe('POST /signUp', () => {
             })
             .end(done);
     });
+
 });
 
 describe('POST /access', () => {
