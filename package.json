@@ -10,6 +10,11 @@
     "build": "npx tsc",
     "test": "SET NODE_ENV=test&& mocha -r ts-node/register server/tests/*.test.ts --timeout 5000"
   },
+  "husky": {
+    "hooks": {
+      "pre-push": "npm test"
+    }
+  },
   "author": "Luca Campana",
   "license": "ISC",
   "dependencies": {
@@ -34,6 +39,7 @@
     "@types/supertest": "^2.0.4",
     "@types/validator": "^9.4.1",
     "expect": "^22.4.3",
+    "husky": "^1.0.0-rc.2",
     "mocha": "^5.1.1",
     "nodemon": "^1.17.3",
     "supertest": "^3.0.0",

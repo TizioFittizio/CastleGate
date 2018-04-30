@@ -60,7 +60,7 @@ export class UserRouter extends BaseRouter {
             const userCreated = new User(body);
             await userCreated.save();
             const token = await userCreated.generateAuthToken(true);
-            res.header('x-auth', token).status(201).send();
+            res.header('x-auth', token).status(201).send(userCreated._id);
         }
         catch (e) {
             return this.handleError(res, e);
