@@ -3,12 +3,13 @@ import jwt = require('jsonwebtoken');
 import { User } from '../../models/user';
 
 const ids = [new mongodb.ObjectID(), new mongodb.ObjectID(), new mongodb.ObjectID()];
+const passwords = ['1234567654321', '6k6Kp#v0hyaGoMMW', '987876765654543432321!'];
 
 export const users = [
     {
         _id: ids[0],
         email: 'test@test.test',
-        password: '1234567654321',
+        password: passwords[0],
         tokens: [
             {
                 token: jwt.sign({id: ids[0]}, process.env.JWT_SECRET!).toString()
@@ -19,7 +20,7 @@ export const users = [
     {
         _id: ids[1],
         email: 'prova@prova.com',
-        password: '6k6Kp#v0hyaGoMMW',
+        password: passwords[1],
         tokens: [
             {
                 token: jwt.sign({id: ids[1]}, process.env.JWT_SECRET!).toString()
@@ -30,7 +31,7 @@ export const users = [
     {
         _id: ids[2],
         email: 'aaaaa@aaaaa.com',
-        password: '987876765654543432321!',
+        password: passwords[2],
         tokens: [
             {
                 token: jwt.sign({id: ids[2]}, process.env.JWT_SECRET!, {expiresIn: '0s'}).toString()

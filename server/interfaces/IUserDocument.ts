@@ -3,7 +3,7 @@ import { Document } from 'mongoose';
 export interface IUserDocument extends Document {
     email: string;
     password: string;
-    tokens: {token: string}[];
+    tokens: Array<{token: string}>;
     creationDate: Date;
     lastEditDate: Date;
     lastAccessDate: Date;

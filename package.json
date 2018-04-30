@@ -6,13 +6,13 @@
   "scripts": {
     "start": "npm run watch",
     "watch": "nodemon --exec ./node_modules/.bin/ts-node -- ./server/server.ts",
-    "lint": "tslint --project ./tsconfig.json 'src/**/*.{ts,tsx}'",
+    "lint": "tslint 'server/**/*.ts'",
     "build": "npx tsc",
     "test": "SET NODE_ENV=test&& mocha -r ts-node/register server/tests/*.test.ts --timeout 5000 --exit"
   },
   "husky": {
     "hooks": {
-      "pre-push": "npm test"
+      "pre-push": "npm run lint && npm test"
     }
   },
   "author": "Luca Campana",

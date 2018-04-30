@@ -6,7 +6,7 @@ import { ErrorResponse, ERROR_OCCURRED } from '../utils/errorResponse';
 const NOT_ENABLED = 'NOT_ENABLED';
 const NO_TOKEN = 'NO_TOKEN';
 
-export interface AuthenticatedRequest extends Request {
+export interface IAuthenticatedRequest extends Request {
     user: IUser;
     token: string;
 }
@@ -27,8 +27,8 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
         if (!user.enabled) {
             throw new Error(NOT_ENABLED);
         }
-        (req as AuthenticatedRequest).user = user;
-        (req as AuthenticatedRequest).token = token;
+        (req as IAuthenticatedRequest).user = user;
+        (req as IAuthenticatedRequest).token = token;
         next();
     }
     catch (e) {

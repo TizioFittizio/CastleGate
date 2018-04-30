@@ -3,7 +3,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 export type RouteAction = (req: Request, res: Response) => void;
 export type RouteMiddleware = (req: Request, res: Response, next: NextFunction) => void;
 
-export interface Route {
+export interface IRoute {
 
     url: string;
     method: Method;
@@ -22,14 +22,18 @@ export enum Method {
 export abstract class BaseRouter {
 
     private router: Router;
-    private routes : Route[];
+    private routes: IRoute[];
 
     constructor() {
         this.router = Router();
         this.routes = [];
     }
 
-    protected setRoutes(routes: Route[]): void {
+    public getRouter() {
+        return this.router;
+    }
+
+    protected setRoutes(routes: IRoute[]): void {
         this.routes = routes;
     }
 
@@ -59,9 +63,4 @@ export abstract class BaseRouter {
 
         }
     }
-
-    public getRouter() {
-        return this.router;
-    }
-
 }

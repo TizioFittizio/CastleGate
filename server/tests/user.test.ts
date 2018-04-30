@@ -18,9 +18,6 @@ describe('GET /dummy', () => {
             .get(route + '/dummy')
             .expect(2000)
             .end(() => {
-                if (1 + 2 === 3) {
-                    throw new Error();
-                }
                 done();
             });
     });
@@ -30,7 +27,7 @@ describe('POST /signUp', () => {
     it('should register a new user', done => {
         const body = {
             email: 'uno@due.tre',
-            password: 'goriziastazionedigorizia'
+            password: Math.random() + ''
         };
         request(app)
             .post(route + '/signUp')
@@ -59,7 +56,7 @@ describe('POST /signUp', () => {
     it('should return error for email already used', done => {
         const body = {
             email: 'test@test.test',
-            password: 'C8PiBdAF6Vq4CE0Fzvo$9vbo$R4PD6t0TZZzwXiR2xrL3$TN@tX'
+            password: Math.random() + ''
         };
         request(app)
             .post(route + '/signUp')
@@ -75,7 +72,7 @@ describe('POST /signUp', () => {
     it('should return error for invalid data submitted', done => {
         const body = {
             email: 'asddsaasddsa',
-            password: 'u'
+            password: (Math.random() + '').slice(0, 1)
         };
         request(app)
             .post(route + '/signUp')
@@ -148,3 +145,12 @@ describe('POST /access', () => {
     });
 
 });
+
+/*describe('POST /signIn', () => {
+    it('should authenticate correctly', done => {
+        const body = {
+
+        }
+        done();
+    })
+})*/

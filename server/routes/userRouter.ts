@@ -1,12 +1,12 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { User } from '../models/user';
-import { BaseRouter, Route, Method } from './baseRouter';
-import { authenticate, AuthenticatedRequest } from '../middlewares/authenticate';
+import { BaseRouter, IRoute, Method } from './baseRouter';
+import { authenticate, IAuthenticatedRequest } from '../middlewares/authenticate';
 import { ErrorResponse, ERROR_OCCURRED } from '../utils/errorResponse';
 
 export class UserRouter extends BaseRouter {
 
-    protected readonly userRoutes: Route[] = [
+    protected readonly userRoutes: IRoute[] = [
         {
             url: '/dummy',
             method: Method.GET,
@@ -74,10 +74,10 @@ export class UserRouter extends BaseRouter {
      */
     private async access(req: Request, res: Response) {
         try {
-            const authReq = (req as AuthenticatedRequest);
+            const authReq = (req as IAuthenticatedRequest);
             authReq.user.lastAccessDate = new Date();
             await authReq.user.save();
-            res.status(200).send((req as AuthenticatedRequest).user._id);
+            res.status(200).send((req as IAuthenticatedRequest).user._id);
         }
         catch (e) {
             return this.handleError(res, e);
@@ -102,7 +102,7 @@ export class UserRouter extends BaseRouter {
 
     private async signOut(req: Request, res: Response) {
         try {
-            const authReq = (req as AuthenticatedRequest);
+            const authReq = (req as IAuthenticatedRequest);
             await authReq.user.removeAuthToken(authReq.token);
             res.status(200).send();
         }

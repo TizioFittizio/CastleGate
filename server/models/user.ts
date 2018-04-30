@@ -72,7 +72,7 @@ export const schema: Schema = new Schema({
 });
 
 /**
- * Pre hook for editing, update the last edit time, and hash the password if changed
+ * Pre hook for editing, update the last edit time for email and password, and hash the password if changed
  */
 schema.pre('save', async function(next: HookNextFunction) {
 
@@ -84,7 +84,7 @@ schema.pre('save', async function(next: HookNextFunction) {
         user.password = hash;
     }
 
-    if (!user.isModified('lastAccessDate')) {
+    if (user.isModified('password') && user.isModified('email')) {
         user.lastEditDate = new Date();
     }
 
@@ -105,7 +105,7 @@ schema.post('save', async function(error: MongoError, doc: mongoose.Document, ne
     if (error.name === 'ValidationError') {
         const errorReponse = new ErrorResponse(
             ERROR_OCCURRED.VALIDATION_ERROR,
-            (error as any).errors   //TODO custom model for errors?
+            (error as any).errors   // TODO custom model for errors?
         );
         return next(new Error(errorReponse.get()));
     }
@@ -125,7 +125,11 @@ schema.methods.generateAuthToken = async function(updateLastAccess: boolean) {
 
     let token;
     if (expirationTime) {
-        token = jwt.sign({id: user._id.toHexString()}, process.env.JWT_SECRET!, { expiresIn: `${expirationTime}` }).toString();
+        token = jwt.sign(
+            {id: user._id.toHexString()},
+            process.env.JWT_SECRET!,
+            { expiresIn: `${expirationTime}` }
+        ).toString();
     }
     else {
         token = jwt.sign({id: user._id.toHexString()}, process.env.JWT_SECRET!);
@@ -140,6 +144,9 @@ schema.methods.generateAuthToken = async function(updateLastAccess: boolean) {
     return Promise.resolve(token);
 };
 
+/**
+ * Remove the token specified for the user
+ */
 schema.methods.removeAuthToken = function(token: string) {
     const user = this as IUserDocument;
     return user.update({
@@ -155,7 +162,7 @@ schema.methods.removeAuthToken = function(token: string) {
  * Return a user with the token provided
  */
 schema.statics.findByToken = async function(token: string): Promise<IUser | null> {
-    let decoded : any;
+    let decoded: any;
 
     try {
         decoded = jwt.verify(token, process.env.JWT_SECRET!);
@@ -172,18 +179,41 @@ schema.statics.findByToken = async function(token: string): Promise<IUser | null
 
 /**
  * Return an user for the email and the correct password provided
+ * If the email is correct but the password is wrong the badPassword count increment
+ * Reaching the limit of incorrects password will disable the user
  */
 schema.statics.findByCredentials = async function(email: string, password: string) {
     try {
+
+        // Find user and check valid arguments
         const userLogin = await User.findOne({email});
         if (!userLogin || !password) {
             throw new Error(new ErrorResponse(ERROR_OCCURRED.LOGIN_FAILED).get());
         }
+
+        // Check if user is enabled
+        if (!userLogin.enabled) {
+            throw new Error(new ErrorResponse(ERROR_OCCURRED.DISABLED_USER).get());
+        }
+
+        // Check password
         const passwordResult = await bcrypt.compare(password, userLogin.password);
         if (passwordResult) {
+
+            // Authentication succesfull
             return Promise.resolve(userLogin);
         }
         else {
+
+            // Authentication failed
+            const badPasswordLimit = process.env.BAD_PASSWORD_LIMIT;
+            if (badPasswordLimit) {
+                userLogin.badPasswordCount ++;
+                if (userLogin.badPasswordCount >= +badPasswordLimit) {
+                    userLogin.enabled = false;
+                }
+                await userLogin.save();
+            }
             throw new Error(new ErrorResponse(ERROR_OCCURRED.LOGIN_FAILED).get());
         }
     }
