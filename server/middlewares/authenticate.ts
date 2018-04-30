@@ -8,7 +8,11 @@ const NO_TOKEN = 'NO_TOKEN';
 
 export interface AuthenticatedRequest extends Request {
     user: IUser;
+    token: string;
 }
+
+// TODO static access from an util class
+const contentType = 'application/json';
 
 export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -24,20 +28,21 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
             throw new Error(NOT_ENABLED);
         }
         (req as AuthenticatedRequest).user = user;
+        (req as AuthenticatedRequest).token = token;
         next();
     }
     catch (e) {
         if (e.message === NOT_ENABLED) {
-            return res.contentType('application/json').status(403).send(
+            return res.contentType(contentType).status(403).send(
                 new ErrorResponse(ERROR_OCCURRED.DISABLED_USER).get()
             );
         }
         if (e.message === NO_TOKEN) {
-            return res.contentType('application/json').status(400).send(
+            return res.contentType(contentType).status(400).send(
                 new ErrorResponse(ERROR_OCCURRED.TOKEN_REQUIRED).get()
             );
         }
-        res.status(401).contentType('application/json').send(
+        res.status(401).contentType(contentType).send(
             new ErrorResponse(ERROR_OCCURRED.NEW_TOKEN_REQUIRED).get()
         );
     }

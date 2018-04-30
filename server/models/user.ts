@@ -9,11 +9,13 @@ import { MongoError } from 'mongodb';
 import { ErrorResponse, ERROR_OCCURRED } from './../utils/errorResponse';
 
 export interface IUser extends IUserDocument {
-    generateAuthToken(): string;
+    generateAuthToken(updateLastAccess: boolean): string;
+    removeAuthToken(token: string): string;
 }
 
 export interface IUserModel extends Model<IUser> {
     findByToken(token: string): Promise<IUser>;
+    findByCredentials(email: string, password: string): Promise<IUser>;
 }
 
 export const schema: Schema = new Schema({
@@ -116,7 +118,7 @@ schema.post('save', async function(error: MongoError, doc: mongoose.Document, ne
 /**
  * Return a token used for actions that requires authentication
  */
-schema.methods.generateAuthToken = async function() {
+schema.methods.generateAuthToken = async function(updateLastAccess: boolean) {
 
     const user = this as IUserDocument;
     const expirationTime = process.env.TOKEN_EXPIRATION_TIME;
@@ -129,17 +131,30 @@ schema.methods.generateAuthToken = async function() {
         token = jwt.sign({id: user._id.toHexString()}, process.env.JWT_SECRET!);
     }
     user.tokens = user.tokens.concat([{token}]);
+
+    if (updateLastAccess) {
+        user.lastAccessDate = new Date();
+    }
     await user.save();
 
     return Promise.resolve(token);
+};
+
+schema.methods.removeAuthToken = function(token: string) {
+    const user = this as IUserDocument;
+    return user.update({
+        $pull: {
+            tokens: {
+                token
+            }
+        }
+    });
 };
 
 /**
  * Return a user with the token provided
  */
 schema.statics.findByToken = async function(token: string): Promise<IUser | null> {
-
-    const user = this as IUserDocument;
     let decoded : any;
 
     try {
@@ -153,6 +168,28 @@ schema.statics.findByToken = async function(token: string): Promise<IUser | null
         '_id': decoded.id,
         'tokens.token': token
     });
+};
+
+/**
+ * Return an user for the email and the correct password provided
+ */
+schema.statics.findByCredentials = async function(email: string, password: string) {
+    try {
+        const userLogin = await User.findOne({email});
+        if (!userLogin || !password) {
+            throw new Error(new ErrorResponse(ERROR_OCCURRED.LOGIN_FAILED).get());
+        }
+        const passwordResult = await bcrypt.compare(password, userLogin.password);
+        if (passwordResult) {
+            return Promise.resolve(userLogin);
+        }
+        else {
+            throw new Error(new ErrorResponse(ERROR_OCCURRED.LOGIN_FAILED).get());
+        }
+    }
+    catch (e) {
+        return Promise.reject(e);
+    }
 };
 
 export const User: IUserModel = mongoose.model<IUser, IUserModel>('User', schema);

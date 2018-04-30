@@ -6,7 +6,7 @@
   "scripts": {
     "start": "npm run watch",
     "watch": "nodemon --exec ./node_modules/.bin/ts-node -- ./server/server.ts",
-    "lint": "tslint -c tslint.json './*.ts'",
+    "lint": "tslint --project ./tsconfig.json 'src/**/*.{ts,tsx}'",
     "build": "npx tsc",
     "test": "SET NODE_ENV=test&& mocha -r ts-node/register server/tests/*.test.ts --timeout 5000"
   },
@@ -39,6 +39,7 @@
     "supertest": "^3.0.0",
     "ts-node": "^6.0.0",
     "tslint": "^5.9.1",
+    "tslint-sonarts": "^1.6.0",
     "typescript": "^2.8.1"
   }
 }

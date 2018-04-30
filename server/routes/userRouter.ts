@@ -22,6 +22,17 @@ export class UserRouter extends BaseRouter {
             method: Method.POST,
             action: this.access.bind(this),
             middlewares: [authenticate]
+        },
+        {
+            url: '/signIn',
+            method: Method.POST,
+            action: this.signIn.bind(this)
+        },
+        {
+            url: '/signOut',
+            method: Method.POST,
+            action: this.signOut.bind(this),
+            middlewares: [authenticate]
         }
     ];
 
@@ -48,7 +59,7 @@ export class UserRouter extends BaseRouter {
             };
             const userCreated = new User(body);
             await userCreated.save();
-            const token = await userCreated.generateAuthToken();
+            const token = await userCreated.generateAuthToken(true);
             res.header('x-auth', token).status(201).send();
         }
         catch (e) {
@@ -73,8 +84,36 @@ export class UserRouter extends BaseRouter {
         }
     }
 
+    private async signIn(req: Request, res: Response) {
+        try {
+            const body = {
+                password: req.body.password,
+                email: req.body.email
+            };
+            const user = await User.findByCredentials(body.email, body.password);
+            user.lastAccessDate = new Date();
+            const token = await user.generateAuthToken(true);
+            res.header('x-auth', token).status(200).send(user._id);
+        }
+        catch (e) {
+            return this.handleError(res, e);
+        }
+    }
+
+    private async signOut(req: Request, res: Response) {
+        try {
+            const authReq = (req as AuthenticatedRequest);
+            await authReq.user.removeAuthToken(authReq.token);
+            res.status(200).send();
+        }
+        catch (e) {
+            return this.handleError(res, e);
+        }
+    }
+
     /**
      * Error handler
+     * TODO callable from errorResponse
      * e.message is usually a JSON formatted by the user post save hook
      * If the error is not a json string, it will be parsed as one
      * @param res Express response

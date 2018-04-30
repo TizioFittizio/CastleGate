@@ -4,7 +4,8 @@ export enum ERROR_OCCURRED {
     VALIDATION_ERROR,
     TOKEN_REQUIRED,
     NEW_TOKEN_REQUIRED,
-    DISABLED_USER
+    DISABLED_USER,
+    LOGIN_FAILED
 }
 
 export class ErrorResponse {
