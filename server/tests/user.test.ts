@@ -16,8 +16,11 @@ describe('GET /dummy', () => {
     it('should call dummy route correctly', done => {
         request(app)
             .get(route + '/dummy')
-            .expect(418)
+            .expect(2000)
             .end(() => {
+                if (1 + 2 === 3) {
+                    throw new Error();
+                }
                 done();
             });
     });
