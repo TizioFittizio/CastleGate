@@ -225,3 +225,34 @@ describe('POST /signIn', () => {
             .end(done);
     });
 });
+
+describe('POST /signOut', () => {
+    it('should log out correctly', done => {
+        request(app)
+            .post(route + '/signOut')
+            .set('x-auth', users[1].tokens[0].token)
+            .expect(200)
+            .end(done);
+    });
+
+    it('should not log out with an invalid token', done => {
+        request(app)
+            .post(route + '/signOut')
+            .set('x-auth', users[2].tokens[0].token)
+            .expect(401)
+            .expect((res: request.Response) => {
+                expect(res.body.errorCode).toBe(ERROR_OCCURRED.NEW_TOKEN_REQUIRED);
+            })
+            .end(done);
+    });
+
+    it('should not log out without a token', done => {
+        request(app)
+            .post(route + '/signOut')
+            .expect(400)
+            .expect((res: request.Response) => {
+                expect(res.body.errorCode).toBe(ERROR_OCCURRED.TOKEN_REQUIRED);
+            })
+            .end(done);
+    });
+});
