@@ -1,8 +1,8 @@
 {
-  "name": "node-typescript-starter",
+  "name": "castle-gate",
   "version": "1.0.0",
-  "description": "Boilerplate project typescript",
-  "main": "index.js",
+  "description": "Node service for managing authentication mongo db",
+  "main": "server/server.ts",
   "scripts": {
     "start": "npm run watch",
     "watch": "nodemon --exec ./node_modules/.bin/ts-node -- ./server/server.ts",
