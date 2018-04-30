@@ -60,7 +60,9 @@ export class UserRouter extends BaseRouter {
             const userCreated = new User(body);
             await userCreated.save();
             const token = await userCreated.generateAuthToken(true);
-            res.header('x-auth', token).status(201).send(userCreated._id);
+            res.header('x-auth', token).status(201).send({
+                authId: userCreated._id
+            });
         }
         catch (e) {
             return this.handleError(res, e);
@@ -77,7 +79,9 @@ export class UserRouter extends BaseRouter {
             const authReq = (req as IAuthenticatedRequest);
             authReq.user.lastAccessDate = new Date();
             await authReq.user.save();
-            res.status(200).send((req as IAuthenticatedRequest).user._id);
+            res.status(200).send({
+                authId: (req as IAuthenticatedRequest).user._id
+            });
         }
         catch (e) {
             return this.handleError(res, e);
@@ -93,7 +97,9 @@ export class UserRouter extends BaseRouter {
             const user = await User.findByCredentials(body.email, body.password);
             user.lastAccessDate = new Date();
             const token = await user.generateAuthToken(true);
-            res.header('x-auth', token).status(200).send(user._id);
+            res.header('x-auth', token).status(200).send({
+                authId: user._id
+            });
         }
         catch (e) {
             return this.handleError(res, e);

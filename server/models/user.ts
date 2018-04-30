@@ -201,6 +201,10 @@ schema.statics.findByCredentials = async function(email: string, password: strin
         if (passwordResult) {
 
             // Authentication succesfull
+            if (userLogin.badPasswordCount > 0) {
+                userLogin.badPasswordCount = 0;
+                userLogin.save();
+            }
             return Promise.resolve(userLogin);
         }
         else {

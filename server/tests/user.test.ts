@@ -35,6 +35,7 @@ describe('POST /signUp', () => {
             .expect(201)
             .expect((res: request.Response) => {
                 expect(res.header['x-auth']).toBeTruthy();
+                expect(res.body.authId).toBeTruthy();
             })
             .end(async (err, res) => {
                 try {
@@ -99,6 +100,9 @@ describe('POST /access', () => {
             .post(route + '/access')
             .set('x-auth', users[1].tokens[0].token)
             .expect(200)
+            .expect((res: request.Response) => {
+                expect(res.body.authId).toBeTruthy();
+            })
             .end(async (err, res) => {
                 try {
                     expect(err).toBeNull();
@@ -146,11 +150,78 @@ describe('POST /access', () => {
 
 });
 
-/*describe('POST /signIn', () => {
+describe('POST /signIn', () => {
     it('should authenticate correctly', done => {
-        const body = {
 
-        }
-        done();
-    })
-})*/
+        let lastAccess: Date;
+        User.findById(users[1]._id)
+        .then(user => {
+            lastAccess = user!.lastAccessDate;
+        });
+
+        const body = {
+            email: users[1].email,
+            password: users[1].password
+        };
+
+        request(app)
+            .post(route + '/signIn')
+            .send(body)
+            .expect(200)
+            .expect((res: request.Response) => {
+                expect(res.header['x-auth']).toBeTruthy();
+                expect(res.body.authId).toBeTruthy();
+            })
+            .end(async (err, res) => {
+                try {
+                    expect(err).toBeNull();
+                    const userLogged = await User.findById(users[1]._id);
+                    expect(userLogged!.lastAccessDate !== lastAccess).toBeTruthy();
+                    expect(userLogged!.badPasswordCount).toBe(0);
+                    done();
+                }
+                catch (e){
+                    done(e);
+                }
+            });
+    });
+
+    it('should fail for missing params', done => {
+        request(app)
+            .post(route + '/signIn')
+            .send({})
+            .expect(400)
+            .expect((res: request.Response) => {
+                expect(res.body.errorCode).toBe(ERROR_OCCURRED.LOGIN_FAILED);
+            })
+            .end(done);
+    });
+
+    it('should fail with incorrect credentials', done => {
+        request(app)
+            .post(route + '/signIn')
+            .send({
+                email: users[1].email,
+                password: users[1].password + 'a'
+            })
+            .expect(400)
+            .expect((res: request.Response) => {
+                expect(res.body.errorCode).toBe(ERROR_OCCURRED.LOGIN_FAILED);
+            })
+            .end(done);
+    });
+
+    it('should not allow to enter invalid users', done => {
+        request(app)
+            .post(route + '/signIn')
+            .send({
+                email: users[0].email,
+                password: users[0].password
+            })
+            .expect(400)
+            .expect((res: request.Response) => {
+                expect(res.body.errorCode).toBe(ERROR_OCCURRED.DISABLED_USER);
+            })
+            .end(done);
+    });
+});
