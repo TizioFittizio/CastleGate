@@ -9,7 +9,7 @@ import { MongoError } from 'mongodb';
 import { ErrorResponse, ERROR_OCCURRED } from './../utils/errorResponse';
 
 export interface IUser extends IUserDocument {
-    generateAuthToken(updateLastAccess: boolean): string;
+    generateAuthToken(updateLastAccess: boolean, agent: string): string;
     removeAuthToken(token: string): void;
 }
 
@@ -39,6 +39,10 @@ export const schema: Schema = new Schema({
         token: {
             type: String,
             required: true
+        },
+        agent: {
+            type: String,
+            required: true
         }
     }],
     rememberMe: {
@@ -59,7 +63,7 @@ export const schema: Schema = new Schema({
     },
     enabled: {
         type: Boolean,
-        default: !process.env.MANUAL_USER_ENABLING
+        default: (process.env.MANUAL_USER_ENABLING === 'TRUE')
     },
     emailConfirmed: {
         type: Boolean,
@@ -118,8 +122,7 @@ schema.post('save', async function(error: MongoError, doc: mongoose.Document, ne
 /**
  * Return a token used for actions that requires authentication
  */
-schema.methods.generateAuthToken = async function(updateLastAccess: boolean) {
-
+schema.methods.generateAuthToken = async function(updateLastAccess: boolean, agent: string) {
     const user = this as IUserDocument;
     const expirationTime = process.env.TOKEN_EXPIRATION_TIME;
 
@@ -134,7 +137,10 @@ schema.methods.generateAuthToken = async function(updateLastAccess: boolean) {
     else {
         token = jwt.sign({id: user._id.toHexString()}, process.env.JWT_SECRET!);
     }
-    user.tokens = user.tokens.concat([{token}]);
+
+    // Removing tokens of same agent
+    user.tokens = user.tokens.filter(x => x.agent !== agent);
+    user.tokens = user.tokens.concat([{token, agent}]);
 
     if (updateLastAccess) {
         user.lastAccessDate = new Date();

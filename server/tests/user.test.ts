@@ -45,7 +45,8 @@ describe('POST /signUp', () => {
                     expect(user!.email).toBe(body.email);
                     expect(user!.password !== body.password).toBeTruthy();
                     expect(user!.emailConfirmed).toBeFalsy();
-                    expect(user!.enabled === !process.env.MANUAL_USER_ENABLING).toBeTruthy();
+                    expect(user!.tokens.length).toBe(1);
+                    expect(user!.enabled === (process.env.MANUAL_USER_ENABLING === 'true')).toBeTruthy();
                     done();
                 }
                 catch (e) {
@@ -178,9 +179,10 @@ describe('POST /signIn', () => {
                     const userLogged = await User.findById(users[1]._id);
                     expect(userLogged!.lastAccessDate !== lastAccess).toBeTruthy();
                     expect(userLogged!.badPasswordCount).toBe(0);
+                    expect(userLogged!.tokens.length).toBe(2);
                     done();
                 }
-                catch (e){
+                catch (e) {
                     done(e);
                 }
             });
@@ -224,6 +226,9 @@ describe('POST /signIn', () => {
             })
             .end(done);
     });
+
+    // TODO should be blocked after reaching max attempts for password
+
 });
 
 describe('POST /signOut', () => {

@@ -57,9 +57,10 @@ export class UserRouter extends BaseRouter {
                 password: req.body.password,
                 email: req.body.email
             };
+            const agent = req.get('User-Agent') || 'unknown';
             const userCreated = new User(body);
             await userCreated.save();
-            const token = await userCreated.generateAuthToken(true);
+            const token = await userCreated.generateAuthToken(true, agent);
             res.header('x-auth', token).status(201).send({
                 authId: userCreated._id
             });
@@ -94,9 +95,10 @@ export class UserRouter extends BaseRouter {
                 password: req.body.password,
                 email: req.body.email
             };
+            const agent = req.get('User-Agent') || 'unknown';
             const user = await User.findByCredentials(body.email, body.password);
             user.lastAccessDate = new Date();
-            const token = await user.generateAuthToken(true);
+            const token = await user.generateAuthToken(true, agent);
             res.header('x-auth', token).status(200).send({
                 authId: user._id
             });

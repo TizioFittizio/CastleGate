@@ -12,7 +12,8 @@ export const users = [
         password: passwords[0],
         tokens: [
             {
-                token: jwt.sign({id: ids[0]}, process.env.JWT_SECRET!).toString()
+                token: jwt.sign({id: ids[0]}, process.env.JWT_SECRET!).toString(),
+                agent: 'TEST'
             }
         ],
         enabled: false
@@ -23,7 +24,8 @@ export const users = [
         password: passwords[1],
         tokens: [
             {
-                token: jwt.sign({id: ids[1]}, process.env.JWT_SECRET!).toString()
+                token: jwt.sign({id: ids[1]}, process.env.JWT_SECRET!).toString(),
+                agent: 'TEST'
             }
         ],
         enabled: true
@@ -34,7 +36,8 @@ export const users = [
         password: passwords[2],
         tokens: [
             {
-                token: jwt.sign({id: ids[2]}, process.env.JWT_SECRET!, {expiresIn: '0s'}).toString()
+                token: jwt.sign({id: ids[2]}, process.env.JWT_SECRET!, {expiresIn: '0s'}).toString(),
+                agent: 'TEST'
             }
         ],
         enabled: true
@@ -44,7 +47,11 @@ export const users = [
 export const populateUsers = async () => {
     try {
         await User.remove({});
-        await Promise.all([new User(users[0]).save(), new User(users[1]).save()]);
+        await Promise.all([
+            new User(users[0]).save(),
+            new User(users[1]).save(),
+            new User(users[2]).save()
+        ]);
         return Promise.resolve();
     }
     catch (e) {
