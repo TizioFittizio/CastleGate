@@ -10,7 +10,7 @@ import { ErrorResponse, ERROR_OCCURRED } from './../utils/errorResponse';
 
 export interface IUser extends IUserDocument {
     generateAuthToken(updateLastAccess: boolean): string;
-    removeAuthToken(token: string): string;
+    removeAuthToken(token: string): void;
 }
 
 export interface IUserModel extends Model<IUser> {
@@ -201,9 +201,9 @@ schema.statics.findByCredentials = async function(email: string, password: strin
         if (passwordResult) {
 
             // Authentication succesfull
+            // The user will be saved with the token generation
             if (userLogin.badPasswordCount > 0) {
                 userLogin.badPasswordCount = 0;
-                userLogin.save();
             }
             return Promise.resolve(userLogin);
         }
