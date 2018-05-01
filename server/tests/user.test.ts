@@ -126,8 +126,6 @@ describe('POST /access', () => {
             .end(done);
     });
 
-    // TODO token with no user
-
     it('should not allow to enter if user is disabled', done => {
         request(app)
             .post(route + '/access')
@@ -147,13 +145,7 @@ describe('POST /access', () => {
             .expect((res: request.Response) => {
                 expect(res.body.errorCode).toBe(ERROR_OCCURRED.NEW_TOKEN_REQUIRED);
             })
-            .end(async (err, res) => {
-                const user = await User.findOne({
-                    'tokens.token': users[2].tokens[0].token
-                });
-                expect(user).toBeNull();
-                done();
-            });
+            .end(done);
     });
 
 });
@@ -188,7 +180,7 @@ describe('POST /signIn', () => {
                     expect(userLogged!.badPasswordCount).toBe(0);
                     done();
                 }
-                catch (e) {
+                catch (e){
                     done(e);
                 }
             });

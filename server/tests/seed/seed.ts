@@ -44,7 +44,7 @@ export const users = [
 export const populateUsers = async () => {
     try {
         await User.remove({});
-        await Promise.all([new User(users[0]).save(), new User(users[1]).save(), new User(users[2]).save()]);
+        await Promise.all([new User(users[0]).save(), new User(users[1]).save()]);
         return Promise.resolve();
     }
     catch (e) {

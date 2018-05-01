@@ -162,40 +162,19 @@ schema.methods.removeAuthToken = function(token: string) {
  * Return a user with the token provided
  */
 schema.statics.findByToken = async function(token: string): Promise<IUser | null> {
+    let decoded: any;
+
     try {
-
-        // Validate token
-        const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);
-
-        // Find user with token
-        const userWithToken = await User.findOne({
-            '_id': decoded.id,
-            'tokens.token': token
-        });
-
-        // If no user is found return error
-        if (!userWithToken) {
-            return Promise.reject(new ErrorResponse(ERROR_OCCURRED.NEW_TOKEN_REQUIRED));
-        }
-
-        return Promise.resolve(userWithToken);
+        decoded = jwt.verify(token, process.env.JWT_SECRET!);
     }
     catch (e) {
-
-        // If a user was found but the token is invalid, the token will be removed
-
-        // Find user with token
-        const userWithToken = await User.findOne({
-            'tokens.token': token
-        });
-
-        // Remove token if user found
-        if (userWithToken) {
-            await userWithToken.removeAuthToken(token);
-        }
-
         return Promise.reject(e);
     }
+
+    return User.findOne({
+        '_id': decoded.id,
+        'tokens.token': token
+    });
 };
 
 /**
