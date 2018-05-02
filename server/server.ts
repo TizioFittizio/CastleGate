@@ -1,5 +1,5 @@
-require('./config/configSetup.ts');
-require('./db/mongoose.ts');
+require('./config/configSetup');
+require('./db/mongoose');
 
 import express = require('express');
 import bodyParser = require('body-parser');

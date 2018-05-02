@@ -8,7 +8,8 @@
     "watch": "nodemon --exec ./node_modules/.bin/ts-node -- ./server/server.ts",
     "lint": "tslint 'server/**/*.ts'",
     "build": "npx tsc",
-    "test": "SET NODE_ENV=test&& mocha -r ts-node/register server/tests/*.test.ts --timeout 5000 --exit"
+    "test": "SET NODE_ENV=test&& mocha -r ts-node/register server/tests/*.test.ts --timeout 5000 --exit",
+    "prod": "SET NODE_ENV=production&&node dist/server.js"
   },
   "husky": {
     "hooks": {
