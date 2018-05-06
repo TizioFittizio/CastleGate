@@ -63,7 +63,7 @@ export const schema: Schema = new Schema({
     },
     enabled: {
         type: Boolean,
-        default: (process.env.MANUAL_USER_ENABLING === 'TRUE')
+        default: !(process.env.MANUAL_USER_ENABLING === 'TRUE')
     },
     emailConfirmed: {
         type: Boolean,

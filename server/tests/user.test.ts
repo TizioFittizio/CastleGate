@@ -46,7 +46,7 @@ describe('POST /signUp', () => {
                     expect(user!.password !== body.password).toBeTruthy();
                     expect(user!.emailConfirmed).toBeFalsy();
                     expect(user!.tokens.length).toBe(1);
-                    expect(user!.enabled === (process.env.MANUAL_USER_ENABLING === 'true')).toBeTruthy();
+                    expect(user!.enabled === !(process.env.MANUAL_USER_ENABLING === 'true')).toBeTruthy();
                     done();
                 }
                 catch (e) {
