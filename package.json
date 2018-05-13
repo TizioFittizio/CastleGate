@@ -8,12 +8,13 @@
     "build": "npx tsc",
     "lint": "tslint 'server/**/*.ts'",
     "start": "node dist/index.js",
-    "watch": "nodemon --exec ./node_modules/.bin/ts-node -- ./index.ts"
+    "watch": "nodemon --exec ./node_modules/.bin/ts-node -- ./index.ts",
+    "test": "SET NODE_ENV=test&& mocha -r ts-node/register server/tests/*.test.ts --timeout 5000 --exit"
   },
   "husky": {
     "hooks": {
       "pre-commit": "npm run build",
-      "pre-push": "npm run lint"
+      "pre-push": "npm run lint && npm run test"
     }
   },
   "author": "Luca Campana",
