@@ -7,8 +7,8 @@
     "type-start": "./node_modules/.bin/ts-node -- ./server/server.ts",
     "build": "npx tsc",
     "lint": "tslint 'server/**/*.ts'",
-    "start": "node dist/index.js",
-    "watch": "nodemon --exec ./node_modules/.bin/ts-node -- ./index.ts",
+    "start": "node dist/server.js",
+    "watch": "nodemon --exec ./node_modules/.bin/ts-node -- ./server/server.ts",
     "test": "SET NODE_ENV=test&& mocha -r ts-node/register server/tests/*.test.ts --timeout 5000 --exit"
   },
   "husky": {
