@@ -4,7 +4,7 @@
   "description": "Node service for managing authentication mongo db",
   "main": "server/server.ts",
   "scripts": {
-    "type-start": "./node_modules/.bin/ts-node -- ./index.ts",
+    "type-start": "./node_modules/.bin/ts-node -- ./server/server.ts",
     "build": "npx tsc",
     "lint": "tslint 'server/**/*.ts'",
     "start": "node dist/index.js",
