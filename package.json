@@ -4,16 +4,16 @@
   "description": "Node service for managing authentication mongo db",
   "main": "server/server.ts",
   "scripts": {
-    "start": "npm run watch",
-    "watch": "nodemon --exec ./node_modules/.bin/ts-node -- ./server/server.ts",
-    "lint": "tslint 'server/**/*.ts'",
+    "type-start": "./node_modules/.bin/ts-node -- ./index.ts",
     "build": "npx tsc",
-    "test": "SET NODE_ENV=test&& mocha -r ts-node/register server/tests/*.test.ts --timeout 5000 --exit",
-    "prod": "SET NODE_ENV=production&&node dist/server.js"
+    "lint": "tslint 'server/**/*.ts'",
+    "start": "node dist/index.js",
+    "watch": "nodemon --exec ./node_modules/.bin/ts-node -- ./index.ts"
   },
   "husky": {
     "hooks": {
-      "pre-push": "npm run lint && npm test"
+      "pre-commit": "npm run build",
+      "pre-push": "npm run lint"
     }
   },
   "author": "Luca Campana",
