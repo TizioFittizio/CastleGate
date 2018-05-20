@@ -13,8 +13,8 @@
   },
   "husky": {
     "hooks": {
-      "precommit": "npm run build",
-      "prepush": "npm run lint && npm run test"
+      "pre-commit": "npm run build",
+      "pre-push": "npm run lint && npm run test"
     }
   },
   "author": "Luca Campana",
