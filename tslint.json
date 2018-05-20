@@ -27,7 +27,8 @@
             "check-typecast",
             "check-type-operator",
             "check-preblock"
-        ]
+        ],
+        "no-commented-code": false
     },
     "rulesDirectory": []
 }

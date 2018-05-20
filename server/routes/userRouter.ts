@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { User } from '../models/user';
 import { BaseRouter, IRoute, Method } from './baseRouter';
 import { authenticate, IAuthenticatedRequest } from '../middlewares/authenticate';
-import { ErrorResponse, ERROR_OCCURRED } from '../utils/errorResponse';
+import { ErrorManager, ERROR_OCCURRED } from '../utils/errorManager';
 
 export class UserRouter extends BaseRouter {
 
@@ -121,19 +121,11 @@ export class UserRouter extends BaseRouter {
 
     /**
      * Error handler
-     * TODO callable from errorResponse
-     * e.message is usually a JSON formatted by the user post save hook
-     * If the error is not a json string, it will be parsed as one
      * @param res Express response
      * @param e Error to return
      */
     private handleError(res: Response, e: Error) {
-        try {
-            JSON.parse(e.message);
-        }
-        catch (err) {
-            e.message = new ErrorResponse(ERROR_OCCURRED.GENERIC_ERROR, {message: e.message}).get();
-        }
-        res.status(400).contentType('application/json').send(e.message);
+        console.log(e);
+        ErrorManager.sendErrorResponse(res, e.message);
     }
 }

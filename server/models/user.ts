@@ -6,7 +6,7 @@ import { Schema, Document, Model, HookNextFunction } from 'mongoose';
 import { IUserDocument } from '../interfaces/IUserDocument';
 import { IUser } from './user';
 import { MongoError } from 'mongodb';
-import { ErrorResponse, ERROR_OCCURRED } from './../utils/errorResponse';
+import { ErrorManager, ERROR_OCCURRED } from './../utils/errorManager';
 
 export interface IUser extends IUserDocument {
     generateAuthToken(updateLastAccess: boolean, agent: string): string;
@@ -102,18 +102,19 @@ schema.post('save', async function(error: MongoError, doc: mongoose.Document, ne
 
     // Duplicate email
     if (error.code === 11000) {
-        return next(new Error(new ErrorResponse(ERROR_OCCURRED.ALREADY_PRESENT_EMAIL).get()));
+        return next(new Error(ERROR_OCCURRED.ALREADY_PRESENT_EMAIL));
     }
 
     // Validation error
     if (error.name === 'ValidationError') {
-        const errorReponse = new ErrorResponse(
-            ERROR_OCCURRED.VALIDATION_ERROR,
-            (error as any).errors   // TODO custom model for errors?
-        );
-        return next(new Error(errorReponse.get()));
+        // const errorReponse = new ErrorManager(
+        //     ERROR_OCCURRED.VALIDATION_ERROR,
+        //     (error as any).errors   // TODO should send this to client?
+        // );
+        return next(new Error(ERROR_OCCURRED.VALIDATION_ERROR));
     }
 
+    // TODO if this come at this point that would not mean that there's necessarily an error?
     console.warn('Error not handeled:', error.code, error.name);
 
     next(error);
@@ -194,12 +195,12 @@ schema.statics.findByCredentials = async function(email: string, password: strin
         // Find user and check valid arguments
         const userLogin = await User.findOne({email});
         if (!userLogin || !password) {
-            throw new Error(new ErrorResponse(ERROR_OCCURRED.LOGIN_FAILED).get());
+            throw new Error(ERROR_OCCURRED.LOGIN_FAILED);
         }
 
         // Check if user is enabled
         if (!userLogin.enabled) {
-            throw new Error(new ErrorResponse(ERROR_OCCURRED.DISABLED_USER).get());
+            throw new Error(ERROR_OCCURRED.DISABLED_USER);
         }
 
         // Check password
@@ -224,7 +225,7 @@ schema.statics.findByCredentials = async function(email: string, password: strin
                 }
                 await userLogin.save();
             }
-            throw new Error(new ErrorResponse(ERROR_OCCURRED.LOGIN_FAILED).get());
+            throw new Error(ERROR_OCCURRED.LOGIN_FAILED);
         }
     }
     catch (e) {
