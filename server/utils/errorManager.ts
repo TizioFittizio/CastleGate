@@ -11,38 +11,15 @@ export enum ERROR_OCCURRED {
     MONGO_ERROR = 'MONGO_ERROR'
 }
 
-// asd export class ErrorResponse {
-
-//     private error: ERROR_OCCURRED;
-//     private data: object;
-
-//     constructor(error: ERROR_OCCURRED, data?: object) {
-//         this.error = error;
-//         this.data = data || {};
-//     }
-
-//     public get() {
-//         return JSON.stringify({
-//             errorCode: this.error,
-//             data: this.data
-//         });
-//     }
-
-// }
-
-// TODO DOCUMENT THIS CLASS
-
+/**
+ * Class used to reply to the client with a formatted error
+ */
 export abstract class ErrorManager {
 
-    public static getErrorTypeFromString = (error: string): ERROR_OCCURRED => {
-        for (const e in ERROR_OCCURRED) {
-            if (error === e) {
-                return e as ERROR_OCCURRED;
-            }
-        }
-        return ERROR_OCCURRED.GENERIC_ERROR;
-    }
-
+    /**
+     * Send to the client a formatted error, the error should be an ERROR_OCURRED,
+     * this will give the appropriate status code to the client
+     */
     public static sendErrorResponse = (res: Response, error: ERROR_OCCURRED | string) => {
         if (typeof error === 'string') {
             error = ErrorManager.getErrorTypeFromString(error);
@@ -52,6 +29,15 @@ export abstract class ErrorManager {
             .status(ErrorManager.getErrorStatus(errorOccured))
             .contentType('application/json')
             .send(ErrorManager.getResponse(errorOccured));
+    }
+
+    private static getErrorTypeFromString = (error: string): ERROR_OCCURRED => {
+        for (const e in ERROR_OCCURRED) {
+            if (error === e) {
+                return e as ERROR_OCCURRED;
+            }
+        }
+        return ERROR_OCCURRED.GENERIC_ERROR;
     }
 
     private static getResponse(error: ERROR_OCCURRED, data?: any) {
@@ -75,21 +61,5 @@ export abstract class ErrorManager {
         }
         return status;
     }
-
-    // public errorType: ERROR_OCCURRED;
-    // public errorStatus: number;
-    // public data: any;
-
-    // constructor(errorType: ERROR_OCCURRED | string, data?: any) {
-    //     if (typeof errorType === 'string') {
-    //         this.errorType = ErrorManager.getErrorTypeFromString(errorType);
-    //     }
-    //     else {
-    //         this.errorType = errorType;
-    //     }
-    //     this.data = data || null;
-    //     this.errorStatus = 400;
-    //     this.updateErrorStatus();
-    // }
 
 }
