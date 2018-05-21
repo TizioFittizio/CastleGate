@@ -125,7 +125,6 @@ export class UserRouter extends BaseRouter {
      * @param e Error to return
      */
     private handleError(res: Response, e: Error) {
-        console.log(e);
         ErrorManager.sendErrorResponse(res, e.message);
     }
 }

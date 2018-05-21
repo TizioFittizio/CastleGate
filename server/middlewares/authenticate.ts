@@ -32,7 +32,9 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
         next();
     }
     catch (e) {
-        console.log(e);
-        ErrorManager.sendErrorResponse(res, ERROR_OCCURRED.GENERIC_ERROR);
+        if (e.name === 'TokenExpiredError') {
+            return ErrorManager.sendErrorResponse(res, ERROR_OCCURRED.NEW_TOKEN_REQUIRED);
+        }
+        return ErrorManager.sendErrorResponse(res, ERROR_OCCURRED.GENERIC_ERROR);
     }
 };
