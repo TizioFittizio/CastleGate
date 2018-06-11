@@ -13,7 +13,7 @@ const validator = require("validator");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const mongoose_1 = require("mongoose");
-const errorResponse_1 = require("./../utils/errorResponse");
+const errorManager_1 = require("./../utils/errorManager");
 exports.schema = new mongoose_1.Schema({
     email: {
         type: String,
@@ -87,11 +87,10 @@ exports.schema.pre('save', function (next) {
 exports.schema.post('save', function (error, doc, next) {
     return __awaiter(this, void 0, void 0, function* () {
         if (error.code === 11000) {
-            return next(new Error(new errorResponse_1.ErrorResponse(errorResponse_1.ERROR_OCCURRED.ALREADY_PRESENT_EMAIL).get()));
+            return next(new Error(errorManager_1.ERROR_OCCURRED.ALREADY_PRESENT_EMAIL));
         }
         if (error.name === 'ValidationError') {
-            const errorReponse = new errorResponse_1.ErrorResponse(errorResponse_1.ERROR_OCCURRED.VALIDATION_ERROR, error.errors);
-            return next(new Error(errorReponse.get()));
+            return next(new Error(errorManager_1.ERROR_OCCURRED.VALIDATION_ERROR));
         }
         console.warn('Error not handeled:', error.code, error.name);
         next(error);
@@ -147,10 +146,10 @@ exports.schema.statics.findByCredentials = function (email, password) {
         try {
             const userLogin = yield exports.User.findOne({ email });
             if (!userLogin || !password) {
-                throw new Error(new errorResponse_1.ErrorResponse(errorResponse_1.ERROR_OCCURRED.LOGIN_FAILED).get());
+                throw new Error(errorManager_1.ERROR_OCCURRED.LOGIN_FAILED);
             }
             if (!userLogin.enabled) {
-                throw new Error(new errorResponse_1.ErrorResponse(errorResponse_1.ERROR_OCCURRED.DISABLED_USER).get());
+                throw new Error(errorManager_1.ERROR_OCCURRED.DISABLED_USER);
             }
             const passwordResult = yield bcrypt.compare(password, userLogin.password);
             if (passwordResult) {
@@ -168,7 +167,7 @@ exports.schema.statics.findByCredentials = function (email, password) {
                     }
                     yield userLogin.save();
                 }
-                throw new Error(new errorResponse_1.ErrorResponse(errorResponse_1.ERROR_OCCURRED.LOGIN_FAILED).get());
+                throw new Error(errorManager_1.ERROR_OCCURRED.LOGIN_FAILED);
             }
         }
         catch (e) {

@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const user_1 = require("../models/user");
-const errorResponse_1 = require("../utils/errorResponse");
+const errorManager_1 = require("../utils/errorManager");
 const NOT_ENABLED = 'NOT_ENABLED';
 const NO_TOKEN = 'NO_TOKEN';
 const contentType = 'application/json';
@@ -17,26 +17,23 @@ exports.authenticate = (req, res, next) => __awaiter(this, void 0, void 0, funct
     try {
         const token = req.header('x-auth');
         if (!token) {
-            throw new Error(NO_TOKEN);
+            return errorManager_1.ErrorManager.sendErrorResponse(res, errorManager_1.ERROR_OCCURRED.TOKEN_REQUIRED);
         }
         const user = yield user_1.User.findByToken(token);
         if (!user) {
-            throw new Error();
+            return errorManager_1.ErrorManager.sendErrorResponse(res, errorManager_1.ERROR_OCCURRED.NEW_TOKEN_REQUIRED);
         }
         if (!user.enabled) {
-            throw new Error(NOT_ENABLED);
+            return errorManager_1.ErrorManager.sendErrorResponse(res, errorManager_1.ERROR_OCCURRED.DISABLED_USER);
         }
         req.user = user;
         req.token = token;
         next();
     }
     catch (e) {
-        if (e.message === NOT_ENABLED) {
-            return res.contentType(contentType).status(403).send(new errorResponse_1.ErrorResponse(errorResponse_1.ERROR_OCCURRED.DISABLED_USER).get());
+        if (e.name === 'TokenExpiredError') {
+            return errorManager_1.ErrorManager.sendErrorResponse(res, errorManager_1.ERROR_OCCURRED.NEW_TOKEN_REQUIRED);
         }
-        if (e.message === NO_TOKEN) {
-            return res.contentType(contentType).status(400).send(new errorResponse_1.ErrorResponse(errorResponse_1.ERROR_OCCURRED.TOKEN_REQUIRED).get());
-        }
-        res.status(401).contentType(contentType).send(new errorResponse_1.ErrorResponse(errorResponse_1.ERROR_OCCURRED.NEW_TOKEN_REQUIRED).get());
+        return errorManager_1.ErrorManager.sendErrorResponse(res, errorManager_1.ERROR_OCCURRED.GENERIC_ERROR);
     }
 });

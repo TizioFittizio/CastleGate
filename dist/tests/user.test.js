@@ -13,7 +13,7 @@ const request = require("supertest");
 const server_1 = require("../server");
 const seed_1 = require("./seed/seed");
 const user_1 = require("../models/user");
-const errorResponse_1 = require("../utils/errorResponse");
+const errorManager_1 = require("../utils/errorManager");
 const route = '/auth';
 beforeEach(seed_1.populateUsers);
 describe('GET /dummy', () => {
@@ -68,7 +68,7 @@ describe('POST /signUp', () => {
             .expect(400)
             .expect((res) => {
             expect(res.header['content-type'].indexOf('application/json') >= 0).toBeTruthy();
-            expect(res.body.errorCode).toBe(errorResponse_1.ERROR_OCCURRED.ALREADY_PRESENT_EMAIL);
+            expect(res.body.error).toBe(errorManager_1.ERROR_OCCURRED.ALREADY_PRESENT_EMAIL);
         })
             .end(done);
     });
@@ -82,7 +82,7 @@ describe('POST /signUp', () => {
             .send(body)
             .expect(400)
             .expect((res) => {
-            expect(res.body.errorCode).toBe(errorResponse_1.ERROR_OCCURRED.VALIDATION_ERROR);
+            expect(res.body.error).toBe(errorManager_1.ERROR_OCCURRED.VALIDATION_ERROR);
         })
             .end(done);
     });
@@ -116,9 +116,9 @@ describe('POST /access', () => {
     it('should not allow to enter without a token', done => {
         request(server_1.app)
             .post(route + '/access')
-            .expect(400)
+            .expect(401)
             .expect((res) => {
-            expect(res.body.errorCode).toBe(errorResponse_1.ERROR_OCCURRED.TOKEN_REQUIRED);
+            expect(res.body.error).toBe(errorManager_1.ERROR_OCCURRED.TOKEN_REQUIRED);
         })
             .end(done);
     });
@@ -128,7 +128,7 @@ describe('POST /access', () => {
             .set('x-auth', seed_1.users[0].tokens[0].token)
             .expect(403)
             .expect((res) => {
-            expect(res.body.errorCode).toBe(errorResponse_1.ERROR_OCCURRED.DISABLED_USER);
+            expect(res.body.error).toBe(errorManager_1.ERROR_OCCURRED.DISABLED_USER);
         })
             .end(done);
     });
@@ -138,7 +138,7 @@ describe('POST /access', () => {
             .set('x-auth', seed_1.users[2].tokens[0].token)
             .expect(401)
             .expect((res) => {
-            expect(res.body.errorCode).toBe(errorResponse_1.ERROR_OCCURRED.NEW_TOKEN_REQUIRED);
+            expect(res.body.error).toBe(errorManager_1.ERROR_OCCURRED.NEW_TOKEN_REQUIRED);
         })
             .end(done);
     });
@@ -180,9 +180,9 @@ describe('POST /signIn', () => {
         request(server_1.app)
             .post(route + '/signIn')
             .send({})
-            .expect(400)
+            .expect(401)
             .expect((res) => {
-            expect(res.body.errorCode).toBe(errorResponse_1.ERROR_OCCURRED.LOGIN_FAILED);
+            expect(res.body.error).toBe(errorManager_1.ERROR_OCCURRED.LOGIN_FAILED);
         })
             .end(done);
     });
@@ -193,22 +193,22 @@ describe('POST /signIn', () => {
             email: seed_1.users[1].email,
             password: seed_1.users[1].password + 'a'
         })
-            .expect(400)
+            .expect(401)
             .expect((res) => {
-            expect(res.body.errorCode).toBe(errorResponse_1.ERROR_OCCURRED.LOGIN_FAILED);
+            expect(res.body.error).toBe(errorManager_1.ERROR_OCCURRED.LOGIN_FAILED);
         })
             .end(done);
     });
-    it('should not allow to enter invalid users', done => {
+    it('should not allow to enter disabled users', done => {
         request(server_1.app)
             .post(route + '/signIn')
             .send({
             email: seed_1.users[0].email,
             password: seed_1.users[0].password
         })
-            .expect(400)
+            .expect(403)
             .expect((res) => {
-            expect(res.body.errorCode).toBe(errorResponse_1.ERROR_OCCURRED.DISABLED_USER);
+            expect(res.body.error).toBe(errorManager_1.ERROR_OCCURRED.DISABLED_USER);
         })
             .end(done);
     });
@@ -227,16 +227,16 @@ describe('POST /signOut', () => {
             .set('x-auth', seed_1.users[2].tokens[0].token)
             .expect(401)
             .expect((res) => {
-            expect(res.body.errorCode).toBe(errorResponse_1.ERROR_OCCURRED.NEW_TOKEN_REQUIRED);
+            expect(res.body.error).toBe(errorManager_1.ERROR_OCCURRED.NEW_TOKEN_REQUIRED);
         })
             .end(done);
     });
     it('should not log out without a token', done => {
         request(server_1.app)
             .post(route + '/signOut')
-            .expect(400)
+            .expect(401)
             .expect((res) => {
-            expect(res.body.errorCode).toBe(errorResponse_1.ERROR_OCCURRED.TOKEN_REQUIRED);
+            expect(res.body.error).toBe(errorManager_1.ERROR_OCCURRED.TOKEN_REQUIRED);
         })
             .end(done);
     });

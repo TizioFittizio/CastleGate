@@ -11,7 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const user_1 = require("../models/user");
 const baseRouter_1 = require("./baseRouter");
 const authenticate_1 = require("../middlewares/authenticate");
-const errorResponse_1 = require("../utils/errorResponse");
+const errorManager_1 = require("../utils/errorManager");
 class UserRouter extends baseRouter_1.BaseRouter {
     constructor() {
         super();
@@ -120,13 +120,7 @@ class UserRouter extends baseRouter_1.BaseRouter {
         });
     }
     handleError(res, e) {
-        try {
-            JSON.parse(e.message);
-        }
-        catch (err) {
-            e.message = new errorResponse_1.ErrorResponse(errorResponse_1.ERROR_OCCURRED.GENERIC_ERROR, { message: e.message }).get();
-        }
-        res.status(400).contentType('application/json').send(e.message);
+        errorManager_1.ErrorManager.sendErrorResponse(res, e.message);
     }
 }
 exports.UserRouter = UserRouter;
