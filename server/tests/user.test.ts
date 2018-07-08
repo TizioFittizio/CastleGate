@@ -36,7 +36,7 @@ describe('GET /dummy', () => {
             .end(done);
     });
 
-    it(missingApiKeyMessage, done => {
+    it(invalidApiKeyMessage, done => {
         request(app)
             .get(route + '/dummy')
             .set(keyHeader, invalidApiKey)
