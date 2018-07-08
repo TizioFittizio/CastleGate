@@ -12,6 +12,9 @@ const route = '/auth';
 const keyHeader = 'x-castlegate-key';
 const invalidApiKey = '19';
 
+const missingApiKeyMessage = 'should return an error for missing api key';
+const invalidApiKeyMessage = 'should return an error for an invalid api key';
+
 beforeEach(populateUsers);
 
 describe('GET /dummy', () => {
@@ -23,7 +26,7 @@ describe('GET /dummy', () => {
             .end(done);
     });
 
-    it('should return an error for missing api key', done => {
+    it(missingApiKeyMessage, done => {
         request(app)
             .get(route + '/dummy')
             .expect(400)
@@ -33,7 +36,7 @@ describe('GET /dummy', () => {
             .end(done);
     });
 
-    it('should return an error for an invalid api key', done => {
+    it(missingApiKeyMessage, done => {
         request(app)
             .get(route + '/dummy')
             .set(keyHeader, invalidApiKey)
@@ -114,9 +117,9 @@ describe('POST /signUp', () => {
 
     // TODO test for missing fields?
 
-    it('should return an error for missing api key', done => {
+    it(missingApiKeyMessage, done => {
         const body = {
-            email: 'uno@due.tre',
+            email: 'tre@duo.tre',
             password: Math.random() + ''
         };
         request(app)
@@ -129,9 +132,9 @@ describe('POST /signUp', () => {
             .end(done);
     });
 
-    it('should return an error for an invalid api key', done => {
+    it(invalidApiKeyMessage, done => {
         const body = {
-            email: 'uno@due.tre',
+            email: 'aaa@aaa.aaa',
             password: Math.random() + ''
         };
         request(app)
@@ -212,7 +215,7 @@ describe('POST /access', () => {
             .end(done);
     });
 
-    it('should return an error for missing api key', done => {
+    it(missingApiKeyMessage, done => {
         request(app)
             .post(route + '/access')
             .expect(400)
@@ -222,7 +225,7 @@ describe('POST /access', () => {
             .end(done);
     });
 
-    it('should return an error for an invalid api key', done => {
+    it(invalidApiKeyMessage, done => {
         request(app)
         .post(route + '/access')
         .set(keyHeader, invalidApiKey)
@@ -231,7 +234,7 @@ describe('POST /access', () => {
             expect(res.body.error).toBe(ERROR_OCCURRED.INVALID_API_KEY);
         })
         .end(done);
-    })
+    });
 
 });
 
@@ -315,7 +318,7 @@ describe('POST /signIn', () => {
             .end(done);
     });
 
-    it('should return an error for missing api key', done => {
+    it(missingApiKeyMessage, done => {
         request(app)
             .post(route + '/signIn')
             .send({
@@ -329,7 +332,7 @@ describe('POST /signIn', () => {
             .end(done);
     });
 
-    it('should return an error for an invalid api key', done => {
+    it(invalidApiKeyMessage, done => {
         request(app)
             .post(route + '/signIn')
             .send({
@@ -381,7 +384,7 @@ describe('POST /signOut', () => {
             .end(done);
     });
 
-    it('should return an error for missing api key', done => {
+    it(missingApiKeyMessage, done => {
         request(app)
             .post(route + '/signOut')
             .expect(400)
@@ -391,7 +394,7 @@ describe('POST /signOut', () => {
             .end(done);
     });
 
-    it('should return an error for an invalid api key', done => {
+    it(invalidApiKeyMessage, done => {
         request(app)
             .post(route + '/signOut')
             .set(keyHeader, invalidApiKey)
