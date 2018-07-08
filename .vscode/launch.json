@@ -4,7 +4,21 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Mocha Tests",
+            "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+            // "environment": [{"NODE_ENV":"test"}],
+            "args": [
+                "-r",
+                "ts-node/register",
+                "server/tests/*.test.ts",
+                "--timeout 50000",
+                "--exit"
+            ],
+            "internalConsoleOptions": "openOnSessionStart"
+        },
         {
             "name": "Start",
             "type": "node",

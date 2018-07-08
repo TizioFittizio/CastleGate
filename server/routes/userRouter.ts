@@ -3,6 +3,7 @@ import { User } from '../models/user';
 import { BaseRouter, IRoute, Method } from './baseRouter';
 import { authenticate, IAuthenticatedRequest } from '../middlewares/authenticate';
 import { ErrorManager, ERROR_OCCURRED } from '../utils/errorManager';
+import { apiKey } from './../middlewares/apiKey';
 
 export class UserRouter extends BaseRouter {
 
@@ -10,29 +11,32 @@ export class UserRouter extends BaseRouter {
         {
             url: '/dummy',
             method: Method.GET,
-            action: this.dummy.bind(this)
+            action: this.dummy.bind(this),
+            middlewares: [apiKey]
         },
         {
             url: '/signUp',
             method: Method.POST,
-            action: this.signUp.bind(this)
+            action: this.signUp.bind(this),
+            middlewares: [apiKey]
         },
         {
             url: '/access',
             method: Method.POST,
             action: this.access.bind(this),
-            middlewares: [authenticate]
+            middlewares: [apiKey, authenticate]
         },
         {
             url: '/signIn',
             method: Method.POST,
-            action: this.signIn.bind(this)
+            action: this.signIn.bind(this),
+            middlewares: [apiKey]
         },
         {
             url: '/signOut',
             method: Method.POST,
             action: this.signOut.bind(this),
-            middlewares: [authenticate]
+            middlewares: [apiKey, authenticate]
         }
     ];
 

@@ -8,8 +8,9 @@
     "build": "npx tsc",
     "lint": "tslint 'server/**/*.ts'",
     "start": "node dist/server.js",
-    "watch": "nodemon --exec ./node_modules/.bin/ts-node -- ./server/server.ts",
-    "test": "SET NODE_ENV=test&& mocha -r ts-node/register server/tests/*.test.ts --timeout 5000 --exit"
+    "watch": "nodemon --watch '*.ts' --exec ./node_modules/.bin/ts-node -- ./server/server.ts",
+    "test": "SET NODE_ENV=test&& mocha -r ts-node/register server/tests/*.test.ts --timeout 5000 --exit",
+    "watch-test": "SET NODE_ENV=test&& nodemon -e ts --exec mocha -r ts-node/register server/tests/*.test.ts --timeout 5000"
   },
   "husky": {
     "hooks": {

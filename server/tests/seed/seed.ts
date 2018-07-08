@@ -59,3 +59,5 @@ export const populateUsers = async () => {
         return Promise.reject(e.message);
     }
 };
+
+export const apiKeyTest = '1234567890';
